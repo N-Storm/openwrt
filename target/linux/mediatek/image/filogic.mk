@@ -39,14 +39,14 @@ define Build/mt798x-gpt
 		) \
 			-t 0x83	-N ubootenv	-r	-p 512k@4M \
 			-t 0x83	-N factory	-r	-p 2M@4608k \
-			-t 0xef	-N fip		-r	-p 4M@6656k \
-				-N recovery	-r	-p 49M@11M \
+			-t 0xef	-N fip		-r	-p 3584k@6656k \
+				-N recovery	-r	-p 40M@10M \
 		$(if $(findstring sdmmc,$1), \
-				-N install	-r	-p 58M@60M \
-			-t 0x2e -N production		-p $(CONFIG_TARGET_ROOTFS_PARTSIZE)M@118M \
+				-N install	-r	-p 50M@50M \
+			-t 0x2e -N production		-p $(CONFIG_TARGET_ROOTFS_PARTSIZE)M@100M \
 		) \
 		$(if $(findstring emmc,$1), \
-			-t 0x2e -N production		-p $(CONFIG_TARGET_ROOTFS_PARTSIZE)M@118M \
+			-t 0x2e -N production		-p $(CONFIG_TARGET_ROOTFS_PARTSIZE)M@100M \
 		)
 	cat $@.tmp >> $@
 	rm $@.tmp
