@@ -47,7 +47,7 @@ jobs:
           AFFECTED_KERNEL_VERSIONS: ${{ steps.determine_affected_kernel_versions.outputs.affected_kernel_versions }}
         run: |
           # Dirty hack to leave only mediatek/filogic target remain, as this fork targets only that platform
-          ALL_TARGETS="perl ./scripts/dump-target-info.pl targets 2>/dev/null | grep -E 'filogic|x86/64'"
+          ALL_TARGETS="$(perl ./scripts/dump-target-info.pl targets 2>/dev/null | grep -E 'filogic|x86/64')"
           TARGET_KERNELS="$(perl ./scripts/dump-target-info.pl kernels 2>/dev/null | grep -E 'filogic|x86/64')"
 
           CHANGED_FILES="$(echo ${{ needs.determine_changed_files.outputs.all_changed_files }} | tr ' ' '\n')"
