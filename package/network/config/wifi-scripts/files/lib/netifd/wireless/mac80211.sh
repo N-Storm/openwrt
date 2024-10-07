@@ -169,7 +169,7 @@ mac80211_hostapd_setup_base() {
 	ht_capab=
 	case "$htmode" in
 		VHT20|HT20|HE20|EHT20) ;;
-		HT40*|VHT40|VHT80|VHT160|HE40*|HE80|HE160|EHT40*|EHT80|EHT160|EHT320*)
+		HT40*|VHT40|VHT80|VHT160|HE40*|HE80|HE160|EHT40*|EHT80|EHT160)
 			case "$hwmode" in
 				a)
 					case "$(( (($channel / 4) + $chan_ofs) % 2 ))" in
@@ -219,28 +219,32 @@ mac80211_hostapd_setup_base() {
 		[ -n "$ieee80211n" ] && {
 			append base_cfg "ieee80211n=1" "$N"
 
-			set_default ht_coex 0
-			append base_cfg "ht_coex=$ht_coex" "$N"
+		set_default ht_coex 0
+		append base_cfg "ht_coex=$ht_coex" "$N"
 
 		[ "$ht_coex" -eq 1 ] && {
 			set_default obss_interval 300
 			append base_cfg "obss_interval=$obss_interval" "$N"
 		}
 
-		json_get_vars \
-			ldpc:1 \
-			greenfield:0 \
-			short_gi_20:1 \
-			short_gi_40:1 \
-			tx_stbc:1 \
-			rx_stbc:3 \
-			max_amsdu:1 \
-			dsss_cck_40:1
+			json_get_vars \
+				ldpc:1 \
+				greenfield:0 \
+				short_gi_20:1 \
+				short_gi_40:1 \
+				tx_stbc:1 \
+				rx_stbc:3 \
+				max_amsdu:1 \
+				dsss_cck_40:1
 
 		ht_cap_mask=0
-		for cap in $(iw phy "$phy" info | grep 'Capabilities: 0x' | cut -d: -f2); do
-			ht_cap_mask="$(($ht_cap_mask | $cap))"
-		done
+
+		[ "$band" = "2g" ] && {
+			ht_cap_mask=$(iw phy phy0 info | grep 'Band 1:' -A 1 | grep 'Capabilities: ' | cut -d: -f2)
+		}
+		[ "$band" = "5g" ] && {
+			ht_cap_mask=$(iw phy phy1 info | grep 'Band 2:' -A 1 | grep 'Capabilities: ' | cut -d: -f2)
+		}
 
 			cap_rx_stbc=$((($ht_cap_mask >> 8) & 3))
 			[ "$rx_stbc" -lt "$cap_rx_stbc" ] && cap_rx_stbc="$rx_stbc"
@@ -272,6 +276,8 @@ mac80211_hostapd_setup_base() {
 	case "$htmode" in
 		VHT20|HE20|EHT20) enable_ac=1;;
 		VHT40|HE40|EHT40)
+		VHT20|HE20|EHT20) enable_ac=1;;
+		VHT40|HE40|EHT40)
 			case "$(( (($channel / 4) + $chan_ofs) % 2 ))" in
 				1) idx=$(($channel + 2));;
 				0) idx=$(($channel - 2));;
@@ -279,6 +285,7 @@ mac80211_hostapd_setup_base() {
 			enable_ac=1
 			vht_center_seg0=$idx
 		;;
+		VHT80|HE80|EHT80)
 		VHT80|HE80|EHT80)
 			case "$(( (($channel / 4) + $chan_ofs) % 4 ))" in
 				1) idx=$(($channel + 6));;
@@ -396,7 +403,7 @@ mac80211_hostapd_setup_base() {
 			mu_beamformee:1 \
 			vht_txop_ps:1 \
 			htc_vht:1 \
-			beamformee_antennas:4 \
+			beamformee_antennas:5 \
 			beamformer_antennas:4 \
 			rx_antenna_pattern:1 \
 			tx_antenna_pattern:1 \

@@ -126,6 +126,7 @@ hostapd_common_add_device_config() {
 	config_add_int rts_threshold
 	config_add_int rssi_reject_assoc_rssi
 	config_add_int rssi_ignore_probe_request
+	config_add_int rssi_reject_assoc_timeout
 	config_add_int maxassoc
 	config_add_int reg_power_type
 	config_add_boolean stationary_ap
