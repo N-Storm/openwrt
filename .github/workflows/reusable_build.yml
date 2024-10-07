@@ -202,6 +202,7 @@ jobs:
         shell: su buildbot -c "sh -e {0}"
         working-directory: openwrt
         run: |
+          [[ -f config-nstorm-bananapi-bpi-r4 ]] && cat config-nstorm-bananapi-bpi-r4 > .config
           echo CONFIG_ALL=y >> .config
 
           echo CONFIG_TARGET_MULTI_PROFILE=y >> .config
