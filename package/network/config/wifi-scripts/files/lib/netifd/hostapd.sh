@@ -112,152 +112,159 @@ hostapd_add_log_config() {
 }
 
 hostapd_common_add_device_config() {
-        config_add_array basic_rate
-        config_add_array supported_rates
-        config_add_string beacon_rate
+	config_add_array basic_rate
+	config_add_array supported_rates
+	config_add_string beacon_rate
 
-        config_add_string country country3
-        config_add_boolean country_ie doth
-        config_add_boolean spectrum_mgmt_required
-        config_add_int local_pwr_constraint
-        config_add_string require_mode
-        config_add_boolean legacy_rates
-        config_add_int cell_density
-        config_add_int rts_threshold
-        config_add_int rssi_reject_assoc_rssi
-        config_add_int rssi_ignore_probe_request
-        config_add_int rssi_reject_assoc_timeout
-        config_add_int maxassoc
+	config_add_string country country3
+	config_add_boolean country_ie doth
+	config_add_boolean spectrum_mgmt_required
+	config_add_int local_pwr_constraint
+	config_add_string require_mode
+	config_add_boolean legacy_rates
+	config_add_int cell_density
+	config_add_int rts_threshold
+	config_add_int rssi_reject_assoc_rssi
+	config_add_int rssi_ignore_probe_request
+	config_add_int maxassoc
+	config_add_int reg_power_type
+	config_add_boolean stationary_ap
 
-        config_add_string acs_chan_bias
-        config_add_array hostapd_options
+	config_add_string acs_chan_bias
+	config_add_array hostapd_options
 
-        config_add_int airtime_mode
-        config_add_int mbssid
+	config_add_int airtime_mode
+	config_add_int mbssid
 
-        hostapd_add_log_config
+	hostapd_add_log_config
 }
 
 hostapd_prepare_device_config() {
-        local config="$1"
-        local driver="$2"
+	local config="$1"
+	local driver="$2"
 
-        local base_cfg=
+	local base_cfg=
 
-        json_get_vars country country3 country_ie beacon_int:100 doth require_mode legacy_rates \
-                acs_chan_bias local_pwr_constraint spectrum_mgmt_required airtime_mode cell_density \
-                rts_threshold beacon_rate rssi_reject_assoc_rssi rssi_ignore_probe_request maxassoc \
-                mbssid:0
+	json_get_vars country country3 country_ie beacon_int:100 doth require_mode legacy_rates \
+		acs_chan_bias local_pwr_constraint spectrum_mgmt_required airtime_mode cell_density \
+		rts_threshold beacon_rate rssi_reject_assoc_rssi rssi_ignore_probe_request maxassoc \
+		mbssid:0 band reg_power_type stationary_ap
 
-        hostapd_set_log_options base_cfg
+	hostapd_set_log_options base_cfg
 
-        set_default country_ie 1
-        set_default spectrum_mgmt_required 0
-        set_default doth 1
-        set_default legacy_rates 0
-        set_default airtime_mode 0
-        set_default cell_density 0
+	set_default country_ie 1
+	set_default spectrum_mgmt_required 0
+	set_default doth 1
+	set_default legacy_rates 0
+	set_default airtime_mode 0
+	set_default cell_density 0
 
-        [ -n "$country" ] && {
-                append base_cfg "country_code=$country" "$N"
-                [ -n "$country3" ] && append base_cfg "country3=$country3" "$N"
+	[ -n "$country" ] && {
+		append base_cfg "country_code=$country" "$N"
+		[ -n "$country3" ] && append base_cfg "country3=$country3" "$N"
 
-                [ "$country_ie" -gt 0 ] && {
-                        append base_cfg "ieee80211d=1" "$N"
-                        [ -n "$local_pwr_constraint" ] && append base_cfg "local_pwr_constraint=$local_pwr_constraint" "$N"
-                        [ "$spectrum_mgmt_required" -gt 0 ] && append base_cfg "spectrum_mgmt_required=$spectrum_mgmt_required" "$N"
-                }
-                [ "$hwmode" = "a" -a "$doth" -gt 0 ] && append base_cfg "ieee80211h=1" "$N"
-        }
+		[ "$country_ie" -gt 0 ] && {
+			append base_cfg "ieee80211d=1" "$N"
+			[ -n "$local_pwr_constraint" ] && append base_cfg "local_pwr_constraint=$local_pwr_constraint" "$N"
+			[ "$spectrum_mgmt_required" -gt 0 ] && append base_cfg "spectrum_mgmt_required=$spectrum_mgmt_required" "$N"
+		}
+		[ "$hwmode" = "a" -a "$doth" -gt 0 ] && append base_cfg "ieee80211h=1" "$N"
+	}
 
-        [ -n "$acs_chan_bias" ] && append base_cfg "acs_chan_bias=$acs_chan_bias" "$N"
+	[ -n "$acs_chan_bias" ] && append base_cfg "acs_chan_bias=$acs_chan_bias" "$N"
 
-        local brlist= br
-        json_get_values basic_rate_list basic_rate
-        local rlist= r
-        json_get_values rate_list supported_rates
+	local brlist= br
+	json_get_values basic_rate_list basic_rate
+	local rlist= r
+	json_get_values rate_list supported_rates
 
-        [ -n "$hwmode" ] && append base_cfg "hw_mode=$hwmode" "$N"
-        if [ "$hwmode" = "g" ] || [ "$hwmode" = "a" ]; then
-                [ -n "$require_mode" ] && legacy_rates=0
-                case "$require_mode" in
-                        n) append base_cfg "require_ht=1" "$N";;
-                        ac) append base_cfg "require_vht=1" "$N";;
-                esac
-        fi
-        case "$hwmode" in
-                b)
-                        if [ "$cell_density" -eq 1 ]; then
-                                set_default rate_list "5500 11000"
-                                set_default basic_rate_list "5500 11000"
-                        elif [ "$cell_density" -ge 2 ]; then
-                                set_default rate_list "11000"
-                                set_default basic_rate_list "11000"
-                        fi
-                ;;
-                g)
-                        if [ "$cell_density" -eq 0 ] || [ "$cell_density" -eq 1 ]; then
-                                if [ "$legacy_rates" -eq 0 ]; then
-                                        set_default rate_list "6000 9000 12000 18000 24000 36000 48000 54000"
-                                        set_default basic_rate_list "6000 12000 24000"
-                                elif [ "$cell_density" -eq 1 ]; then
-                                        set_default rate_list "5500 6000 9000 11000 12000 18000 24000 36000 48000 54000"
-                                        set_default basic_rate_list "5500 11000"
-                                fi
-                        elif [ "$cell_density" -ge 3 ] && [ "$legacy_rates" -ne 0 ] || [ "$cell_density" -eq 2 ]; then
-                                if [ "$legacy_rates" -eq 0 ]; then
-                                        set_default rate_list "12000 18000 24000 36000 48000 54000"
-                                        set_default basic_rate_list "12000 24000"
-                                else
-                                        set_default rate_list "11000 12000 18000 24000 36000 48000 54000"
-                                        set_default basic_rate_list "11000"
-                                fi
-                        elif [ "$cell_density" -ge 3 ]; then
-                                set_default rate_list "24000 36000 48000 54000"
-                                set_default basic_rate_list "24000"
-                        fi
-                ;;
-                a)
-                        if [ "$cell_density" -eq 1 ]; then
-                                set_default rate_list "6000 9000 12000 18000 24000 36000 48000 54000"
-                                set_default basic_rate_list "6000 12000 24000"
-                        elif [ "$cell_density" -eq 2 ]; then
-                                set_default rate_list "12000 18000 24000 36000 48000 54000"
-                                set_default basic_rate_list "12000 24000"
-                        elif [ "$cell_density" -ge 3 ]; then
-                                set_default rate_list "24000 36000 48000 54000"
-                                set_default basic_rate_list "24000"
-                        fi
-                ;;
-        esac
+	[ -n "$hwmode" ] && append base_cfg "hw_mode=$hwmode" "$N"
+	if [ "$hwmode" = "g" ] || [ "$hwmode" = "a" ]; then
+		[ -n "$require_mode" ] && legacy_rates=0
+		case "$require_mode" in
+			n) append base_cfg "require_ht=1" "$N";;
+			ac) append base_cfg "require_vht=1" "$N";;
+		esac
+	fi
+	case "$hwmode" in
+		b)
+			if [ "$cell_density" -eq 1 ]; then
+				set_default rate_list "5500 11000"
+				set_default basic_rate_list "5500 11000"
+			elif [ "$cell_density" -ge 2 ]; then
+				set_default rate_list "11000"
+				set_default basic_rate_list "11000"
+			fi
+		;;
+		g)
+			if [ "$cell_density" -eq 0 ] || [ "$cell_density" -eq 1 ]; then
+				if [ "$legacy_rates" -eq 0 ]; then
+					set_default rate_list "6000 9000 12000 18000 24000 36000 48000 54000"
+					set_default basic_rate_list "6000 12000 24000"
+				elif [ "$cell_density" -eq 1 ]; then
+					set_default rate_list "5500 6000 9000 11000 12000 18000 24000 36000 48000 54000"
+					set_default basic_rate_list "5500 11000"
+				fi
+			elif [ "$cell_density" -ge 3 ] && [ "$legacy_rates" -ne 0 ] || [ "$cell_density" -eq 2 ]; then
+				if [ "$legacy_rates" -eq 0 ]; then
+					set_default rate_list "12000 18000 24000 36000 48000 54000"
+					set_default basic_rate_list "12000 24000"
+				else
+					set_default rate_list "11000 12000 18000 24000 36000 48000 54000"
+					set_default basic_rate_list "11000"
+				fi
+			elif [ "$cell_density" -ge 3 ]; then
+				set_default rate_list "24000 36000 48000 54000"
+				set_default basic_rate_list "24000"
+			fi
+		;;
+		a)
+			if [ "$cell_density" -eq 1 ]; then
+				set_default rate_list "6000 9000 12000 18000 24000 36000 48000 54000"
+				set_default basic_rate_list "6000 12000 24000"
+			elif [ "$cell_density" -eq 2 ]; then
+				set_default rate_list "12000 18000 24000 36000 48000 54000"
+				set_default basic_rate_list "12000 24000"
+			elif [ "$cell_density" -ge 3 ]; then
+				set_default rate_list "24000 36000 48000 54000"
+				set_default basic_rate_list "24000"
+			fi
+		;;
+	esac
 
-        for r in $rate_list; do
-                hostapd_add_rate rlist "$r"
-        done
+	for r in $rate_list; do
+		hostapd_add_rate rlist "$r"
+	done
 
-        for br in $basic_rate_list; do
-                hostapd_add_rate brlist "$br"
-        done
+	for br in $basic_rate_list; do
+		hostapd_add_rate brlist "$br"
+	done
 
-        json_get_vars rssi_reject_assoc_timeout
-        [ -n "$rssi_reject_assoc_rssi" ] && append base_cfg "rssi_reject_assoc_rssi=$rssi_reject_assoc_rssi" "$N"
-        [ -n "$rssi_ignore_probe_request" ] && append base_cfg "rssi_ignore_probe_request=$rssi_ignore_probe_request" "$N"
-        [ -n "$rssi_reject_assoc_timeout" ] && append base_cfg "rssi_reject_assoc_timeout=$rssi_reject_assoc_timeout" "$N"
-        [ -n "$beacon_rate" ] && append base_cfg "beacon_rate=$beacon_rate" "$N"
-        [ -n "$rlist" ] && append base_cfg "supported_rates=$rlist" "$N"
-        [ -n "$brlist" ] && append base_cfg "basic_rates=$brlist" "$N"
-        append base_cfg "beacon_int=$beacon_int" "$N"
-        [ -n "$rts_threshold" ] && append base_cfg "rts_threshold=$rts_threshold" "$N"
-        [ "$airtime_mode" -gt 0 ] && append base_cfg "airtime_mode=$airtime_mode" "$N"
-        [ -n "$maxassoc" ] && append base_cfg "iface_max_num_sta=$maxassoc" "$N"
-        [ "$mbssid" -gt 0 ] && [ "$mbssid" -le 2 ] && append base_cfg "mbssid=$mbssid" "$N"
+	[ -n "$rssi_reject_assoc_rssi" ] && append base_cfg "rssi_reject_assoc_rssi=$rssi_reject_assoc_rssi" "$N"
+	[ -n "$rssi_ignore_probe_request" ] && append base_cfg "rssi_ignore_probe_request=$rssi_ignore_probe_request" "$N"
+	[ -n "$beacon_rate" ] && append base_cfg "beacon_rate=$beacon_rate" "$N"
+	[ -n "$rlist" ] && append base_cfg "supported_rates=$rlist" "$N"
+	[ -n "$brlist" ] && append base_cfg "basic_rates=$brlist" "$N"
+	append base_cfg "beacon_int=$beacon_int" "$N"
+	[ -n "$rts_threshold" ] && append base_cfg "rts_threshold=$rts_threshold" "$N"
+	[ "$airtime_mode" -gt 0 ] && append base_cfg "airtime_mode=$airtime_mode" "$N"
+	[ -n "$maxassoc" ] && append base_cfg "iface_max_num_sta=$maxassoc" "$N"
+	[ "$mbssid" -gt 0 ] && [ "$mbssid" -le 2 ] && append base_cfg "mbssid=$mbssid" "$N"
 
-        json_get_values opts hostapd_options
-        for val in $opts; do
-                append base_cfg "$val" "$N"
-        done
+	[ "$band" = "6g" ] && {
+		set_default reg_power_type 0
+		append base_cfg "he_6ghz_reg_pwr_type=$reg_power_type" "$N"
+	}
 
-        cat > "$config" <<EOF
+	set_default stationary_ap 1
+	append base_cfg "stationary_ap=$stationary_ap" "$N"
+
+	json_get_values opts hostapd_options
+	for val in $opts; do
+		append base_cfg "$val" "$N"
+	done
+
+	cat > "$config" <<EOF
 driver=$driver
 $base_cfg
 EOF
