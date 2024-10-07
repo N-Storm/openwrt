@@ -100,20 +100,22 @@ for (let phy_name, phy in board.wlan) {
         print(`set ${s}=wifi-device
 set ${s}.type='mac80211'
 set ${s}.${id}
-set ${s}.band='${lc(band_name)}'
+set ${s}.band='${band_name}'
 set ${s}.channel='${channel}'
 set ${s}.htmode='${htmode}'
-set ${s}.country='US'
+set ${s}.country='${country || ''}'
+set ${s}.num_global_macaddr='${num_global_macaddr || ''}'
 set ${s}.noscan=${noscan}
-set ${s}.disabled=${disabled}
+set ${s}.disabled='${defaults ? 0 : 1}'
 
 set ${si}=wifi-iface
 set ${si}.device='${name}'
 set ${si}.network='lan'
 set ${si}.mode='ap'
-set ${si}.ssid=${ssid}
-set ${si}.encryption=${encryption}
+set ${si}.ssid='${defaults?.ssid || "OpenWrt"}'
+set ${si}.encryption='${defaults?.encryption || "none"}'
 set ${si}.mbo=${mbo}
+set ${si}.key='${defaults?.key || ""}'
 
 `);
 
