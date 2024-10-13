@@ -7,7 +7,6 @@ PKG_LICENSE:=GPLv2
 PKG_LICENSE_FILES:=
 
 PKG_SOURCE_URL:=https://github.com/openwrt/mt76
-#PKG_SOURCE_URL:=https://github.com/rmandrad/mt76
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_DATE:=2024-10-11.1
 PKG_SOURCE_VERSION:=ecca0e77b4bce629ec1f79d83bbd14a68f919188
