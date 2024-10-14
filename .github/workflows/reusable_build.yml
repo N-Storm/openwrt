@@ -408,6 +408,7 @@ jobs:
         working-directory: openwrt
         run: |
           rm -rf .config
+          [[ -f config-nstorm-bananapi-bpi-r4 ]] && cat config-nstorm-bananapi-bpi-r4 > .config
 
       - name: Configure testing kernel
         if: inputs.testing == true
