@@ -1,4 +1,4 @@
---- a/net/wireless/certs/nstorm.hex
+--- /dev/null
 +++ b/net/wireless/certs/nstorm.hex
 @@ -0,0 +1,87 @@
 +/* NStorm certificate for modded wireless-regdb */
