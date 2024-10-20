@@ -114,7 +114,6 @@ function wiphy_detect() {
 				band_info.vht = true;
 			let he_phy_cap = 0;
 			let eht_phy_cap = 0;
-			let eht_phy_cap = 0;
 
 			for (let ift in band.iftype_data) {
 				if (!ift.he_cap_phy)
