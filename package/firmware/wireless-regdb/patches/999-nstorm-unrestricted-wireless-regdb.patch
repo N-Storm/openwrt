@@ -1,5 +1,5 @@
---- db.txt.orig.nonpatched	2024-10-21 18:14:26.749828869 +0300
-+++ db.txt	2024-10-21 18:49:03.958431882 +0300
+--- a/db.txt
++++ b/db.txt
 @@ -13,23 +13,19 @@
  	# There is no global intersection for 802.11ah, so just mark the entire
  	# possible band as NO-IR
