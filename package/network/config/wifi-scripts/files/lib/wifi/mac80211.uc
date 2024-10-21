@@ -80,19 +80,26 @@ for (let phy_name, phy in board.wlan) {
         let mbo = 0;
         let band_idx = 0;
         let ssid = "";
+        let country = "RU";
+        let channel = 0;
+        let htmode = "NOHT";
 
         if (band_name == "6G") {
                 encryption = "sae";
+                channel = "65";
+                htmode = "EHT320";
                 mbo = 1;
                 band_idx = 2;
                 ssid = "OpenWrt-6g";
         } else if (band_name == "5G") {
+                htmode = "EHT160";
                 noscan = 1;
                 rnr = 1;
                 background_radar = 1;
                 band_idx = 1;
                 ssid = "OpenWrt-5g";
         } else {
+                htmode = "EHT40";
                 noscan = 1;
                 rnr = 1;
                 ssid = "OpenWrt-2g";
