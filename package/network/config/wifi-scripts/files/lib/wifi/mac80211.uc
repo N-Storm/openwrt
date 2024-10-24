@@ -16,19 +16,21 @@ let commit;
 let random_mac_bytes = getenv("MT76_ENV_RANDOM_MAC_BYTES");
 let config = uci.cursor().get_all("wireless") ?? {};
 
-function radio_exists(path, macaddr, phy) {
-        for (let name, s in config) {
-                if (s[".type"] != "wifi-device")
-                        continue;
-                if (s.macaddr & lc(s.macaddr) == lc(macaddr))
-                        return true;
-                if (s.phy == phy)
-                        return true;
-                if (!s.path || !path)
-                        continue;
-                if (substr(s.path, -length(path)) == path)
-                        return true;
-        }
+function radio_exists(path, macaddr, phy, radio) {
+	for (let name, s in config) {
+		if (s[".type"] != "wifi-device")
+			continue;
+		if (radio != null && int(s.radio) != radio)
+			continue;
+		if (s.macaddr & lc(s.macaddr) == lc(macaddr))
+			return true;
+		if (s.phy == phy)
+			return true;
+		if (!s.path || !path)
+			continue;
+		if (substr(s.path, -length(path)) == path)
+			return true;
+	}
 }
 
 for (let phy_name, phy in board.wlan) {
@@ -86,7 +88,7 @@ for (let phy_name, phy in board.wlan) {
 
         if (band_name == "6G") {
                 encryption = "sae";
-                channel = "65";
+                channel = "37";
                 htmode = "EHT320";
                 mbo = 1;
                 band_idx = 2;
@@ -151,6 +153,7 @@ set ${si}.ieee80211w=2
                                 print(`set ${si_mld}.macaddr=00:1${idx - 1}:55:66${random_mac_bytes}
 `);
                 }
+        config[name] = {};
         commit = true;
 }
 

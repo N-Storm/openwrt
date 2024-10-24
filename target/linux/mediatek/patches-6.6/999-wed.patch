@@ -13,24 +13,6 @@
  	default:
  		break;
  	}
-@@ -670,7 +676,7 @@ mtk_wed_tx_buffer_alloc(struct mtk_wed_d
- 		void *buf;
- 		int s;
- 
--		page = __dev_alloc_page(GFP_KERNEL);
-+		page = __dev_alloc_page(GFP_KERNEL | GFP_DMA32);
- 		if (!page)
- 			return -ENOMEM;
- 
-@@ -793,7 +799,7 @@ mtk_wed_hwrro_buffer_alloc(struct mtk_we
- 		struct page *page;
- 		int s;
- 
--		page = __dev_alloc_page(GFP_KERNEL);
-+		page = __dev_alloc_page(GFP_KERNEL | GFP_DMA32);
- 		if (!page)
- 			return -ENOMEM;
- 
 @@ -2436,6 +2442,10 @@ mtk_wed_attach(struct mtk_wed_device *de
  	dev->version = hw->version;
  	dev->hw->pcie_base = mtk_wed_get_pcie_base(dev);
