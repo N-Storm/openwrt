@@ -82,7 +82,7 @@ for (let phy_name, phy in board.wlan) {
         let mbo = 0;
         let band_idx = 0;
         let ssid = "";
-        let country = "RU";
+        let country = "US";
         let channel = 0;
         let htmode = "NOHT";
 
