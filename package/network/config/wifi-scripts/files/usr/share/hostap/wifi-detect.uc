@@ -126,13 +126,13 @@ function wiphy_detect() {
 			let band_info = {};
 			let band_name;
 			if (freq > 50000)
-				band_name = "60G";
+				band_name = "60g";
 			else if (freq > 5900)
-				band_name = "6G";
+				band_name = "6g";
 			else if (freq > 4000)
-				band_name = "5G";
+				band_name = "5g";
 			else if (freq > 2000)
-				band_name = "2G";
+				band_name = "2g";
 			else
 				continue;
 			bands[band_name] = band_info;

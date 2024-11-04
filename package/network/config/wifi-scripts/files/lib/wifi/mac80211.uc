@@ -2,7 +2,7 @@
 import { readfile } from "fs";
 import * as uci from 'uci';
 
-const bands_order = [ "6G", "5G", "2G" ];
+const bands_order = [ "6g", "5g", "2g" ];
 const htmode_order = [ "EHT", "HE", "VHT", "HT" ];
 const htmode_order = [ "EHT", "HE", "VHT", "HT" ];
 
@@ -51,7 +51,7 @@ for (let phy_name, phy in board.wlan) {
 
         let band = info.bands[band_name];
                 let channel = band.default_channel ?? "auto";
-                if (band_name == "6G")
+                if (band_name == "6g")
                         channel = 37;
 
         let width = band.max_width;
@@ -82,18 +82,18 @@ for (let phy_name, phy in board.wlan) {
         let mbo = 0;
         let band_idx = 0;
         let ssid = "";
-        let country = "RU";
+        let country = "US";
         let channel = 0;
         let htmode = "NOHT";
 
-        if (band_name == "6G") {
+        if (band_name == "6g") {
                 encryption = "sae";
                 channel = "37";
                 htmode = "EHT320";
                 mbo = 1;
                 band_idx = 2;
                 ssid = "OpenWrt-6g";
-        } else if (band_name == "5G") {
+        } else if (band_name == "5g") {
                 htmode = "EHT160";
                 noscan = 1;
                 rnr = 1;
