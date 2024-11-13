@@ -30,10 +30,6 @@ define Build/mt7988-bl31-uboot
 	cat $(STAGING_DIR_IMAGE)/mt7988_$1-u-boot.fip >> $@
 endef
 
-define Build/fatfsimg
-	cat /mnt/openwrt/fatfs.img >> $@
-endef
-
 define Build/mt798x-gpt
 	cp $@ $@.tmp 2>/dev/null || true
 	ptgen -g -o $@.tmp -a 1 -l 1024 \
@@ -48,7 +44,6 @@ define Build/mt798x-gpt
 		$(if $(findstring sdmmc,$1), \
 				-N install	-r	-p 20M@44M \
 			-t 0x2e -N production		-p $(CONFIG_TARGET_ROOTFS_PARTSIZE)M@64M \
-			-t 0x06 -N fatfs	-r	-p 32M@512M \
 		) \
 		$(if $(findstring emmc,$1), \
 			-t 0x2e -N production		-p $(CONFIG_TARGET_ROOTFS_PARTSIZE)M@64M \
@@ -413,10 +408,9 @@ define Device/bananapi_bpi-r4-common
   KERNEL_INITRAMFS_SUFFIX := -recovery.itb
   ARTIFACTS := \
 	       emmc-preloader.bin emmc-bl31-uboot.fip \
-	       fatfs.img sdcard.img.gz \
+	       sdcard.img.gz \
 	       snand-preloader.bin snand-bl31-uboot.fip
   ARTIFACT/emmc-preloader.bin	:= mt7988-bl2 emmc-comb
-  ARTIFACT/fatfs.img		:= fatfsimg
   ARTIFACT/emmc-bl31-uboot.fip	:= mt7988-bl31-uboot $$(DEVICE_NAME)-emmc
   ARTIFACT/snand-preloader.bin	:= mt7988-bl2 spim-nand-ubi-comb
   ARTIFACT/snand-bl31-uboot.fip	:= mt7988-bl31-uboot $$(DEVICE_NAME)-snand
@@ -434,9 +428,8 @@ define Device/bananapi_bpi-r4-common
 				$(if $(CONFIG_TARGET_ROOTFS_SQUASHFS),\
 				   pad-to 64M | append-image squashfs-sysupgrade.itb | check-size |\
 				) \
-				   pad-to 512M | append-image fatfs.img | check-size |\
 				  gzip
-  IMAGE_SIZE := $$(shell expr 64 + 32 + $$(CONFIG_TARGET_ROOTFS_PARTSIZE))m
+  IMAGE_SIZE := $$(shell expr 64 + $$(CONFIG_TARGET_ROOTFS_PARTSIZE))m
   KERNEL			:= kernel-bin | gzip
   KERNEL_INITRAMFS := kernel-bin | lzma | \
 	fit lzma $$(KDIR)/image-$$(firstword $$(DEVICE_DTS)).dtb with-initrd | pad-to 64k
