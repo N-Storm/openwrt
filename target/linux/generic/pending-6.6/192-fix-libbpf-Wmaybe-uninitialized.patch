@@ -1,0 +1,69 @@
+From: Sam James <sam@gentoo.org>
+Subject: [PATCH v3] libbpf: workaround -Wmaybe-uninitialized false positive
+
+In `elf_close`, we get this with GCC 15 -O3 (at least):
+```
+In function ‘elf_close’,
+    inlined from ‘elf_close’ at elf.c:53:6,
+    inlined from ‘elf_find_func_offset_from_file’ at elf.c:384:2:
+elf.c:57:9: warning: ‘elf_fd.elf’ may be used uninitialized [-Wmaybe-uninitialized]
+   57 |         elf_end(elf_fd->elf);
+      |         ^~~~~~~~~~~~~~~~~~~~
+elf.c: In function ‘elf_find_func_offset_from_file’:
+elf.c:377:23: note: ‘elf_fd.elf’ was declared here
+  377 |         struct elf_fd elf_fd;
+      |                       ^~~~~~
+In function ‘elf_close’,
+    inlined from ‘elf_close’ at elf.c:53:6,
+    inlined from ‘elf_find_func_offset_from_file’ at elf.c:384:2:
+elf.c:58:9: warning: ‘elf_fd.fd’ may be used uninitialized [-Wmaybe-uninitialized]
+   58 |         close(elf_fd->fd);
+      |         ^~~~~~~~~~~~~~~~~
+elf.c: In function ‘elf_find_func_offset_from_file’:
+elf.c:377:23: note: ‘elf_fd.fd’ was declared here
+  377 |         struct elf_fd elf_fd;
+      |                       ^~~~~~
+```
+
+In reality, our use is fine, it's just that GCC doesn't model errno
+here (see linked GCC bug). Suppress -Wmaybe-uninitialized accordingly
+by initializing elf_fd.elf to -1.
+
+I've done this in two other functions as well given it could easily
+occur there too (same access/use pattern).
+
+Link: https://gcc.gnu.org/PR114952
+Signed-off-by: Sam James <sam@gentoo.org>
+---
+ tools/lib/bpf/elf.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/tools/lib/bpf/elf.c
++++ b/tools/lib/bpf/elf.c
+@@ -257,7 +257,7 @@ out:
+  */
+ long elf_find_func_offset_from_file(const char *binary_path, const char *name)
+ {
+-	struct elf_fd elf_fd;
++	struct elf_fd elf_fd = { .fd = -1 };
+ 	long ret = -ENOENT;
+ 
+ 	ret = elf_open(binary_path, &elf_fd);
+@@ -294,7 +294,7 @@ int elf_resolve_syms_offsets(const char
+ 	int err = 0, i, cnt_done = 0;
+ 	unsigned long *offsets;
+ 	struct symbol *symbols;
+-	struct elf_fd elf_fd;
++	struct elf_fd elf_fd = { .fd = -1 };
+ 
+ 	err = elf_open(binary_path, &elf_fd);
+ 	if (err)
+@@ -389,7 +389,7 @@ int elf_resolve_pattern_offsets(const ch
+ 	int sh_types[2] = { SHT_SYMTAB, SHT_DYNSYM };
+ 	unsigned long *offsets = NULL;
+ 	size_t cap = 0, cnt = 0;
+-	struct elf_fd elf_fd;
++	struct elf_fd elf_fd = { .fd = -1 };
+ 	int err = 0, i;
+ 
+ 	err = elf_open(binary_path, &elf_fd);
