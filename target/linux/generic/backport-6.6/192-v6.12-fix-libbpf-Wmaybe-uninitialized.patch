@@ -1,4 +1,5 @@
 From: Sam James <sam@gentoo.org>
+Date: Tue, 13 Aug 2024 20:49:06 +0100
 Subject: [PATCH v4] libbpf: workaround -Wmaybe-uninitialized false positive
 
 In `elf_close`, we get this with GCC 15 -O3 (at least):
@@ -7,7 +8,7 @@ In function ‘elf_close’,
     inlined from ‘elf_close’ at elf.c:53:6,
     inlined from ‘elf_find_func_offset_from_file’ at elf.c:384:2:
 elf.c:57:9: warning: ‘elf_fd.elf’ may be used uninitialized
-[-Wmaybe-uninitialized]
+    [-Wmaybe-uninitialized]
    57 |         elf_end(elf_fd->elf);
       |         ^~~~~~~~~~~~~~~~~~~~
 elf.c: In function ‘elf_find_func_offset_from_file’:
@@ -18,7 +19,7 @@ In function ‘elf_close’,
     inlined from ‘elf_close’ at elf.c:53:6,
     inlined from ‘elf_find_func_offset_from_file’ at elf.c:384:2:
 elf.c:58:9: warning: ‘elf_fd.fd’ may be used uninitialized
-[-Wmaybe-uninitialized]
+    [-Wmaybe-uninitialized]
    58 |         close(elf_fd->fd);
       |         ^~~~~~~~~~~~~~~~~
 elf.c: In function ‘elf_find_func_offset_from_file’:
@@ -36,6 +37,9 @@ callers.
 
 Link: https://gcc.gnu.org/PR114952
 Signed-off-by: Sam James <sam@gentoo.org>
+Link: https://lore.kernel.org/bpf/14ec488a1cac02794c2fa2b83ae0cef1bce2cb36.1723578546.git.sam@gentoo.org/
+[nstorm.ahoy166@silomails.com: refreshed patch, formatted message, added link and tested]
+Signed-off-by: Pavel Shirov <nstorm.ahoy166@silomails.com>
 ---
  tools/lib/bpf/elf.c | 3 +++
  1 file changed, 3 insertions(+)
