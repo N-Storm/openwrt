@@ -6,11 +6,11 @@ PKG_RELEASE=1
 PKG_LICENSE:=GPLv2
 PKG_LICENSE_FILES:=
 
-#PKG_SOURCE_URL:=https://github.com/openwrt/mt76
-#PKG_SOURCE_PROTO:=git
-#PKG_SOURCE_DATE:=2024-10-11.1
-#PKG_SOURCE_VERSION:=ecca0e77b4bce629ec1f79d83bbd14a68f919188
-#PKG_MIRROR_HASH:=770823f282c76532567a651bb020208c3ddd5a728c656fcde43129fc95edf538
+PKG_SOURCE_URL:=https://github.com/openwrt/mt76
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_DATE:=2024-10-28
+PKG_SOURCE_VERSION:=c246fa545119abe5097682316700f13c91399042
+PKG_MIRROR_HASH:=ff59d9588e6b114be8fe08013b55da975bc6bb4219b97b6fedb72246e9337c18
 
 PKG_MAINTAINER:=Felix Fietkau <nbd@nbd.name>
 PKG_USE_NINJA:=0
@@ -41,8 +41,6 @@ define KernelPackage/mt76-default
   DEPENDS:= \
 	+kmod-mac80211 \
 	+@DRIVER_11AC_SUPPORT \
-	+@DRIVER_11AX_SUPPORT \
-	+@DRIVER_11BE_SUPPORT \
 	+@KERNEL_PAGE_POOL
 endef
 
@@ -320,7 +318,8 @@ endef
 define KernelPackage/mt7996e
   $(KernelPackage/mt76-default)
   TITLE:=MediaTek MT7996E wireless driver
-  DEPENDS+=@PCI_SUPPORT +kmod-mt76-core +kmod-mt76-connac +kmod-hwmon-core +kmod-thermal +@DRIVER_11AX_SUPPORT +@DRIVER_11BE_SUPPORT +@KERNEL_RELAY
+  DEPENDS+=@PCI_SUPPORT +kmod-mt76-connac +kmod-hwmon-core +@DRIVER_11AX_SUPPORT \
+  	   +@KERNEL_RELAY +@DRIVER_11BE_SUPPORT
   FILES:= $(PKG_BUILD_DIR)/mt7996/mt7996e.ko
   AUTOLOAD:=$(call AutoProbe,mt7996e)
 endef

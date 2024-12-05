@@ -4,7 +4,6 @@ import * as uci from 'uci';
 
 const bands_order = [ "6G", "5G", "2G" ];
 const htmode_order = [ "EHT", "HE", "VHT", "HT" ];
-const htmode_order = [ "EHT", "HE", "VHT", "HT" ];
 
 let board = json(readfile("/etc/board.json"));
 if (!board.wlan)
@@ -82,8 +81,7 @@ for (let phy_name, phy in board.wlan) {
         let mbo = 0;
         let band_idx = 0;
         let ssid = "";
-        let country = "RU";
-        let channel = 0;
+        let country = "US";
         let htmode = "NOHT";
 
         if (band_name == "6G") {
@@ -96,16 +94,20 @@ for (let phy_name, phy in board.wlan) {
         } else if (band_name == "5G") {
                 htmode = "EHT160";
                 noscan = 1;
+                channel = "40";
                 rnr = 1;
                 background_radar = 1;
                 band_idx = 1;
                 ssid = "OpenWrt-5g";
         } else {
                 htmode = "EHT40";
+                channel = "4";
                 noscan = 1;
                 rnr = 1;
                 ssid = "OpenWrt-2g";
         }
+
+        band_name = lc(band_name);
 
         print(`set ${s}=wifi-device
 set ${s}.type='mac80211'
