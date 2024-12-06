@@ -1,0 +1,47 @@
+From: Pavel Shirov <nstorm.ahoy166@silomails.com>
+Subject: [PATCH] strace: workaround f_handle -Werror=maybe-uninitialized
+
+Getting these errors when trying to compile strace with gcc-14, mold and
+LTO enabled:
+
+```
+In function 'print_quoted_string',
+    inlined from 'print_f_handle' at file_handle.c:30:3:
+util.c:1346:16: error: 'f_handle' may be used uninitialized
+    [-Werror=maybe-uninitialized]
+ 1346 |         return print_quoted_string_ex(str, size, style, NULL);
+      |                ^
+util.c: In function 'print_f_handle':
+util.c:1296:1: note: by argument 1 of type 'const char *'
+    to 'print_quoted_string_ex' declared here
+ 1296 | print_quoted_string_ex(const char *str, unsigned int size,
+      | ^
+file_handle.c:26:14: note: 'f_handle' declared here
+   26 |         char f_handle[MAX_HANDLE_SZ];
+      |              ^
+lto1: all warnings being treated as errors
+make[7]: *** [/mnt/openwrt/openwrt/tmp/ccVoNQ0K.mk:11:
+    /mnt/openwrt/openwrt/tmp/ccaeZjOc.ltrans3.ltrans.o] Error 1
+make[7]: *** Waiting for unfinished jobs....
+lto-wrapper: fatal error: make returned 2 exit status
+compilation terminated.
+mold: fatal: lto-wrapper failed
+```
+
+Defining f_handle[] as an empty string in print_f_handle() fixes this
+issue.
+
+Signed-off-by: Pavel Shirov <nstorm.ahoy166@silomails.com>
+---
+
+--- a/src/file_handle.c
++++ b/src/file_handle.c
+@@ -23,7 +23,7 @@ static void
+ print_f_handle(struct tcb *tcp, kernel_ulong_t addr, unsigned int handle_bytes)
+ {
+ 	unsigned int len = MIN(handle_bytes, MAX_HANDLE_SZ);
+-	char f_handle[MAX_HANDLE_SZ];
++	char f_handle[MAX_HANDLE_SZ] = "";
+ 	addr += sizeof(file_handle_header);
+ 	if (addr > sizeof(file_handle_header) &&
+ 	    !umoven(tcp, addr, len, f_handle)) {
